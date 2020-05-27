@@ -8,10 +8,10 @@ CREATE TABLE department (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE role (
+CREATE TABLE department_role (
     id INTEGER(4) AUTO_INCREMENT,
     title VARCHAR(30),
-    salary DECIMAL(5, 2),
+    salary DECIMAL(11, 2),
     department_id INTEGER(4) ,
     PRIMARY KEY (id)
 );
@@ -24,8 +24,17 @@ CREATE TABLE employee (
     PRIMARY KEY (id)
 );
 
+INSERT INTO department (name) values ("Finance"), ("Sales"), ("Legal"), ("Engineering");
+
+INSERT INTO department_role (title, salary, department_id) 
+VALUES ("Salesperson", 80000.00, 2), ("Sales Lead", 10000.00, 2), ("Accountant", 125000.00, 1);
+INSERT INTO department_role (title, salary, department_id)
+VALUES ("Finance Lead", 220000, 1), ("Lawyer", 30000, 3), ("Legal Lead", 400000, 3);
+INSERT INTO department_role (title, salary, department_id)
+VALUES ("Engineer", 120000, 4), ("Lead Engineer", 300000, 4);
+
 SELECT * FROM department;
 
-SELECT * FROM role;
+SELECT * FROM department_role;
 
 SELECT * FROM employee;

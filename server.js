@@ -33,7 +33,6 @@ function runSearch() {
     .then(function(answer) {
         switch(answer.start) {
         case "View All Employees":
-            console.log("working?");
             allEmployees();
             break; 
 
