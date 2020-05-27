@@ -1,3 +1,5 @@
+var roles = []
+var managers = []
 
 var mysql = require("mysql");
 var inquirer = require("inquirer");
@@ -34,6 +36,7 @@ function runSearch() {
         switch(answer.start) {
         case "View All Employees":
             allEmployees();
+            // runSearch();
             break; 
 
         case "View All Employees By Department":
@@ -64,8 +67,18 @@ function runSearch() {
 }
 
 function allEmployees() {
-    console.log("All employees");
+    var query = "SELECT employee.first_name, employee.last_name, employee.id, department_role.title, department_role.salary, department.name ";
+    query += "FROM employee INNER JOIN department_role ON (employee.role_id = department_role.id)";
+    query += "INNER JOIN department ON (department_role.department_id = department.id)";
+    query += "ORDER BY employee.id";
+    connection.query(query, function(err, results) {
+    if (err) throw err;
+    for (var i = 0; i < results.length; i++) {
+        console.log(`| ${results[i].id} | ${results[i].first_name} ${results[i].last_name} | ${results[i].name} | ${results[i].title} | ${results[i].salary} | `)
+    }
+    
     runSearch();
+})
 }
 
 function employeesDepartment() {
@@ -98,3 +111,8 @@ function updateManager() {
     runSearch();
 }
 
+//have to predefine roles and salary
+//1, 2, 3, 4 department ids
+//"Finance", "Sales", "Legal", "Engineering"
+
+//leads are managers
