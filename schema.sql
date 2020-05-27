@@ -16,11 +16,12 @@ CREATE TABLE department_role (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE employee (
+CREATE TABLE employees (
     id INTEGER AUTO_INCREMENT,
     first_name VARCHAR(30),
     last_name VARCHAR (30),
     role_id INTEGER(4),
+    manager_id INTEGER(4),
     PRIMARY KEY (id)
 );
 
@@ -37,4 +38,4 @@ SELECT * FROM department;
 
 SELECT * FROM department_role;
 
-SELECT * FROM employee;
+SELECT * FROM employees;

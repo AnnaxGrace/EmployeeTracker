@@ -36,7 +36,6 @@ function runSearch() {
         switch(answer.start) {
         case "View All Employees":
             allEmployees();
-            // runSearch();
             break; 
 
         case "View All Employees By Department":
@@ -67,10 +66,10 @@ function runSearch() {
 }
 
 function allEmployees() {
-    var query = "SELECT employee.first_name, employee.last_name, employee.id, department_role.title, department_role.salary, department.name ";
-    query += "FROM employee INNER JOIN department_role ON (employee.role_id = department_role.id)";
+    var query = "SELECT employees.first_name, employees.last_name, employees.id, department_role.title, department_role.salary, department.name ";
+    query += "FROM employees INNER JOIN department_role ON (employees.role_id = department_role.id)";
     query += "INNER JOIN department ON (department_role.department_id = department.id)";
-    query += "ORDER BY employee.id";
+    query += "ORDER BY employees.id";
     connection.query(query, function(err, results) {
     if (err) throw err;
     for (var i = 0; i < results.length; i++) {
@@ -82,8 +81,35 @@ function allEmployees() {
 }
 
 function employeesDepartment() {
-    console.log("Employees Department");
-    runSearch();
+    inquirer.prompt ({
+        name: "department",
+        type: "rawlist",
+        message: "What department do you want to search by?",
+        choices: [
+            "Finance",
+             "Sales", 
+             "Legal", 
+             "Engineering"
+        ]
+        
+    }).then(function(answer) {
+        var query = "SELECT department.name, employees.first_name, employees.last_name, employees.id ";
+        query += "FROM employees INNER JOIN department_role ON (employees.role_id = department_role.id)";
+        query += "INNER JOIN department ON (department_role.department_id = department.id)";
+        query += "WHERE ( department.name = ?)";
+        query += "ORDER BY employees.id";
+        connection.query(query, [answer.department], function(err, res){
+            if (err) throw err;
+            for (i = 0; i < res.length; i ++) {
+                console.log(`| ${res[i].id} |  ${res[i].first_name} ${res[i].last_name} |`);
+            }
+
+            runSearch();
+        })
+
+
+    });
+  
 }
 
 function employeesManager() {
