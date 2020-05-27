@@ -11,8 +11,10 @@ var connection = mysql.createConnection({
     database: "employees_db"
 });
 
+// getRoles();
 connection.connect(function(err) {
     if (err) throw err;
+    // getRoles();
     runSearch();
 })
 
@@ -33,6 +35,7 @@ function runSearch() {
 
     })
     .then(function(answer) {
+        // getRoles();
         switch(answer.start) {
         case "View All Employees":
             allEmployees();
@@ -47,6 +50,7 @@ function runSearch() {
             break;
 
         case "Add Employee":
+            // getRoles();
             addEmployee();
             break;
         
@@ -117,9 +121,42 @@ function employeesManager() {
     runSearch();
 }
 
+function getRoles() {
+   query = "SELECT department_role.title "
+    query += "FROM department_role"
+    connection.query(query, function(err, res) {
+        if (err) throw err;
+        for (i = 0; i < res.length; i ++) {
+            roles.push(res[i].title);
+        }
+    }) 
+}
+
 function addEmployee() {
-    console.log("Add Employee");
-    runSearch();
+    getRoles();
+    inquirer.prompt ([
+    {
+        name: "first",
+        type: "input",
+        message: "What is the first name of your employee?"
+    },
+    {
+        name: "last",
+        type: "input",
+        message: "What is the last name of your employee?"
+    },
+    {
+        name: "role",
+        type: "rawlist",
+        choices: roles
+    },
+
+
+]).then(function (responses) {
+    console.log(responses);
+})
+    
+    // runSearch();
 }
 
 function removeEmployee() {
