@@ -1,4 +1,5 @@
 var roles = [];
+var departments = [];
 var managers = []
 
 var mysql = require("mysql");
@@ -24,6 +25,8 @@ function runSearch() {
         message: "What would you like to do?",
         choices: [
             "View All Employees",
+            "View All Departments",
+            "View All Roles",
             "View All Employees By Department",
             "View All Employees By Roles",
             "Add Employee",
@@ -38,6 +41,14 @@ function runSearch() {
         case "View All Employees":
             allEmployees();
             break; 
+
+        case "View All Departments":
+            allDepartments();
+            break;
+        
+        case "View All Roles":
+            allRoles();
+            break;
 
         case "View All Employees By Department":
             employeesDepartment();
@@ -85,6 +96,34 @@ function allEmployees() {
 })
 }
 
+function allDepartments () {
+    var query = "SELECT * FROM department ";
+    query += "ORDER BY department.id";
+    connection.query(query, function(err, results) {
+    if (err) throw err;
+    console.log(results.length);
+    for (var i = 0; i < results.length; i++) {
+        console.log(`| ${results[i].id} | ${results[i].name} | `)
+    }
+    
+    runSearch();
+})
+}
+
+function allRoles() {
+    var query = "SELECT * FROM department_role ";
+    query += "ORDER BY department_role.id";
+    connection.query(query, function(err, results) {
+        if (err) throw err;
+        console.log(results.length);
+        for (var i = 0; i < results.length; i++) {
+            console.log(`| ${results[i].id} | ${results[i].title} | ${results[i].salary}`)
+        }
+        
+        runSearch();
+})
+}
+
 function employeesDepartment() {
     inquirer.prompt ({
         name: "department",
@@ -117,11 +156,11 @@ function employeesDepartment() {
   
 }
 
+
 function getRoles() {
     // roles = [];
     var query = "SELECT department_role.title "
     query += "FROM department_role"
-    console.log("help");
     connection.query(query, function(err, res) {
         if (err) throw err;
         for (i = 0; i < res.length; i ++) {
@@ -185,9 +224,7 @@ function addEmployee() {
         if (err) throw err;
         for (var i = 0; i < res.length; i++ ) {
             if (res[i].title === responses.role) {
-                console.log("This is the id " + res[i].id);
                 roleNumber = res[i].id;
-                console.log(roleNumber)
             }
         }
 
@@ -215,12 +252,29 @@ function addEmployee() {
   
 }
 
-function addRole() {
-    console.log("Remove Employee");
-    runSearch();
+function addDepartment() {
+    inquirer.prompt ([
+        {
+            name: "department",
+            type: "input",
+            message: "What would you like the name of your department to be?"
+
+        }
+    ]).then(function(response) {
+        connection.query("INSERT INTO department SET ?",
+        {
+            name: response.department
+        },
+        function(err) {
+            if (err) throw err;
+            console.log("Added department successfully")
+            runSearch();
+
+        })
+    });
 }
 
-function addDepartment() {
+function addRole() {
     console.log("Remove Employee");
     runSearch();
 }
