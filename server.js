@@ -11,10 +11,9 @@ var connection = mysql.createConnection({
     database: "employees_db"
 });
 
-// getRoles();
+
 connection.connect(function(err) {
     if (err) throw err;
-    // getRoles();
     runSearch();
 })
 
@@ -35,7 +34,6 @@ function runSearch() {
 
     })
     .then(function(answer) {
-        // getRoles();
         switch(answer.start) {
         case "View All Employees":
             allEmployees();
@@ -50,7 +48,6 @@ function runSearch() {
             break;
 
         case "Add Employee":
-            // getRoles();
             addEmployee();
             break;
         
@@ -153,10 +150,39 @@ function addEmployee() {
 
 
 ]).then(function (responses) {
-    console.log(responses);
-})
+    var roleNumber;
+    connection.query("SELECT department_role.id, department_role.title FROM department_role", function(err, res) {
+        if (err) throw err;
+        for (var i = 0; i < res.length; i++ ) {
+            if (res[i].title === responses.role) {
+                console.log("This is the id " + res[i].id);
+                roleNumber = res[i].id;
+                console.log(roleNumber)
+            }
+        }
+
+        connection.query(
+            "INSERT INTO employees SET ?",
+        {
+            first_name: responses.first,
+            last_name: responses.last,
+            role_id: roleNumber,
+            manager_id: responses.manager || 0
+        }, 
+        function(err) {
+            if (err) throw err;
+            console.log("Added employee successfully");
+            
+            runSearch();
+        });
+
+    })
     
-    // runSearch();
+
+    
+});
+    
+  
 }
 
 function removeEmployee() {
