@@ -1,4 +1,4 @@
-var roles = []
+var roles = [];
 var managers = []
 
 var mysql = require("mysql");
@@ -25,11 +25,11 @@ function runSearch() {
         choices: [
             "View All Employees",
             "View All Employees By Department",
-            "View All Employees By Manager",
+            "View All Employees By Roles",
             "Add Employee",
-            "Remove Employee",
+            "Add Role",
+            "Add Department",
             "Update Employee Role",
-            "Update Employee Manager"
         ]
 
     })
@@ -43,16 +43,20 @@ function runSearch() {
             employeesDepartment();
             break;
 
-        case "View All Employees By Manager":
-            employeesManager();
+        case "View All Employees By Roles":
+            employeesRoles();
             break;
 
         case "Add Employee":
             addEmployee();
             break;
         
-        case "Remove Employee":
-            removeEmployee();
+        case "Add Role":
+            addRole();
+            break;
+
+        case "Add Department":
+            addDepartment();
             break;
 
         case "Update Employee Role":
@@ -113,20 +117,45 @@ function employeesDepartment() {
   
 }
 
-function employeesManager() {
-    console.log("Employees Manager");
-    runSearch();
-}
-
 function getRoles() {
-   query = "SELECT department_role.title "
+    // roles = [];
+    var query = "SELECT department_role.title "
     query += "FROM department_role"
+    console.log("help");
     connection.query(query, function(err, res) {
         if (err) throw err;
         for (i = 0; i < res.length; i ++) {
             roles.push(res[i].title);
         }
     }) 
+}
+
+function employeesRoles() {
+    getRoles();
+    inquirer.prompt ([
+        {
+            name: "role",
+            type: "rawlist",
+            message: "What role do you want to search by?",
+            choices: roles
+        },
+    ]).then(function(answer) {
+        var query = "SELECT department.name, employees.first_name, employees.last_name, employees.id ";
+        query += "FROM employees INNER JOIN department_role ON (employees.role_id = department_role.id)";
+        query += "INNER JOIN department ON (department_role.department_id = department.id)";
+        query += "WHERE ( department_role.title = ?)";
+        query += "ORDER BY employees.id";
+        connection.query(query, [answer.role], function(err, res){
+            if (err) throw err;
+            for (i = 0; i < res.length; i ++) {
+                console.log(`| ${res[i].id} |  ${res[i].first_name} ${res[i].last_name} |`);
+            }
+
+            runSearch();
+        })
+
+
+    });
 }
 
 function addEmployee() {
@@ -145,6 +174,7 @@ function addEmployee() {
     {
         name: "role",
         type: "rawlist",
+        message: "What role do you want your employee to have?",
         choices: roles
     },
 
@@ -185,7 +215,12 @@ function addEmployee() {
   
 }
 
-function removeEmployee() {
+function addRole() {
+    console.log("Remove Employee");
+    runSearch();
+}
+
+function addDepartment() {
     console.log("Remove Employee");
     runSearch();
 }
