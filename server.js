@@ -257,7 +257,7 @@ function addDepartment() {
         {
             name: "department",
             type: "input",
-            message: "What would you like the name of your department to be?"
+            message: "What would you like the name of your new department to be?"
 
         }
     ]).then(function(response) {
@@ -274,9 +274,37 @@ function addDepartment() {
     });
 }
 
+//do first thing
 function addRole() {
-    console.log("Remove Employee");
-    runSearch();
+    //getDepartment();
+    inquirer.prompt ([
+        {
+            name: "role",
+            type: "input",
+            message: "What would you like the name of your new role to be?"
+        },
+        {
+            name: "salary",
+            type: "input",
+            message: "What is the salary of your new job? No commas, and have two decimal places"
+        },
+        {
+            name: "department",
+            type: "rawlist",
+
+        }
+    ]).then(function(response) {
+        connection.query("INSERT INTO department_role SET ?",
+        {
+            title: response.role
+        },
+        function(err) {
+            if (err) throw err;
+            console.log("Added role successfully")
+            runSearch();
+
+        })
+    });
 }
 
 function updateRole() {
