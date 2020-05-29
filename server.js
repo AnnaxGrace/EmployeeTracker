@@ -117,7 +117,7 @@ function allRoles() {
         if (err) throw err;
         console.log(results.length);
         for (var i = 0; i < results.length; i++) {
-            console.log(`| ${results[i].id} | ${results[i].title} | ${results[i].salary}`)
+            console.log(`| ${results[i].id} | ${results[i].title} | ${results[i].salary} | ${results[i].department_id} `)
         }
         
         runSearch();
@@ -129,12 +129,7 @@ function employeesDepartment() {
         name: "department",
         type: "rawlist",
         message: "What department do you want to search by?",
-        choices: [
-            "Finance",
-             "Sales", 
-             "Legal", 
-             "Engineering"
-        ]
+        choices: departments
         
     }).then(function(answer) {
         var query = "SELECT department.name, employees.first_name, employees.last_name, employees.id ";
@@ -158,7 +153,6 @@ function employeesDepartment() {
 
 
 function getRoles() {
-    // roles = [];
     var query = "SELECT department_role.title "
     query += "FROM department_role"
     connection.query(query, function(err, res) {
@@ -166,11 +160,11 @@ function getRoles() {
         for (i = 0; i < res.length; i ++) {
             roles.push(res[i].title);
         }
+    return roles
     }) 
 }
 
 function employeesRoles() {
-    getRoles();
     inquirer.prompt ([
         {
             name: "role",
@@ -198,7 +192,6 @@ function employeesRoles() {
 }
 
 function addEmployee() {
-    getRoles();
     inquirer.prompt ([
     {
         name: "first",
@@ -274,9 +267,8 @@ function addDepartment() {
     });
 }
 
-//do first thing
+
 function addRole() {
-    //getDepartment();
     inquirer.prompt ([
         {
             name: "role",
@@ -291,23 +283,39 @@ function addRole() {
         {
             name: "department",
             type: "rawlist",
+            choices: departments
 
         }
     ]).then(function(response) {
-        connection.query("INSERT INTO department_role SET ?",
-        {
-            title: response.role
-        },
-        function(err) {
+        var departmentNumber;
+        connection.query("SELECT department.id, department.name FROM department", function(err, res) {
+            for (var i = 0; i < res.length; i++ ) {
+                if (res[i].name === response.department) {
+                departmentNumber = res[i].id;
+                }
+            }
+    
+            connection.query("INSERT INTO department_role SET ?",
+                {
+                    title: response.role,
+                    salary: response.salary,
+                    department_id: departmentNumber
+                },
+            function(err) {
             if (err) throw err;
             console.log("Added role successfully")
+            roles.push(response.role);
             runSearch();
 
-        })
+            });
+        });
     });
 }
 
 function updateRole() {
+    connection.query("SELECT * FROM employees", function(err, response) {
+        console.log(response);
+    })
     console.log("Update Role");
     runSearch();
 }
@@ -317,8 +325,30 @@ function updateManager() {
     runSearch();
 }
 
-//have to predefine roles and salary
-//1, 2, 3, 4 department ids
-//"Finance", "Sales", "Legal", "Engineering"
+function getRoles() {
+    var query = "SELECT department_role.title "
+    query += "FROM department_role"
+    connection.query(query, function(err, res) {
+        if (err) throw err;
+        for (i = 0; i < res.length; i ++) {
+            roles.push(res[i].title);
+        }
+    return roles
+    }) 
+}
 
-//leads are managers
+function getDepartments() {
+    var query = "SELECT department.name "
+    query += "FROM department"
+    connection.query(query, function(err, res) {
+        if (err) throw err;
+        for (i = 0; i < res.length; i ++) {
+            departments.push(res[i].name);
+        }
+    return departments;
+    }) 
+}
+
+
+getRoles();
+getDepartments();
