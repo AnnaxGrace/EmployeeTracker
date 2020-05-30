@@ -1,7 +1,9 @@
+//variables that contain empty arrays that will hold all of the names of our departments and roles
+//Use for choices later in inquirer.
 var roles = [];
 var departments = [];
-var managers = []
 
+//Our dependency requires and our connection
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var connection = mysql.createConnection({
@@ -18,7 +20,11 @@ connection.connect(function(err) {
     runSearch();
 })
 
+
+//Our primary function that runs at the beginning, and goes through our choices
 function runSearch() {
+
+    //start questions that tell the client what they can do
     inquirer.prompt({
         name: "start",
         type: "rawlist",
@@ -35,8 +41,8 @@ function runSearch() {
             "Update Employee Role",
         ]
 
-    })
-    .then(function(answer) {
+    }).then(function(answer) {
+        //case switch that runs functions depending on the answer above
         switch(answer.start) {
         case "View All Employees":
             allEmployees();
@@ -73,14 +79,13 @@ function runSearch() {
         case "Update Employee Role":
             updateRole();
             break;
-
-        case "Update Employee Manager":
-            updateManager();
-            break;
         }
     });
 }
 
+//Selects all information, and joins all three tables together
+//Then displays all the employees by their ID number in the terminal with a console log
+//Brings up start questions
 function allEmployees() {
     var query = "SELECT employees.first_name, employees.last_name, employees.id, department_role.title, department_role.salary, department.name ";
     query += "FROM employees INNER JOIN department_role ON (employees.role_id = department_role.id)";
@@ -89,19 +94,19 @@ function allEmployees() {
     connection.query(query, function(err, results) {
     if (err) throw err;
     for (var i = 0; i < results.length; i++) {
-        console.log(`| ${results[i].id} | ${results[i].first_name} ${results[i].last_name} | ${results[i].name} | ${results[i].title} | ${results[i].salary} | `)
+        console.log(`| ${results[i].id} | ${results[i].first_name} ${results[i].last_name} | ${results[i].name} | ${department.name} | ${results[i].title} | ${results[i].salary} | `)
     }
     
     runSearch();
 })
 }
 
+//Displays the name and ID of all of the department names
+//Brings up start questions
 function allDepartments () {
-    var query = "SELECT * FROM department ";
-    query += "ORDER BY department.id";
+    var query = "SELECT * FROM department ORDER BY department.id";
     connection.query(query, function(err, results) {
     if (err) throw err;
-    console.log(results.length);
     for (var i = 0; i < results.length; i++) {
         console.log(`| ${results[i].id} | ${results[i].name} | `)
     }
@@ -110,12 +115,13 @@ function allDepartments () {
 })
 }
 
+//Displays all of the necessary information of a role in a company
+//Brings up start questions
 function allRoles() {
     var query = "SELECT * FROM department_role ";
     query += "ORDER BY department_role.id";
     connection.query(query, function(err, results) {
         if (err) throw err;
-        console.log(results.length);
         for (var i = 0; i < results.length; i++) {
             console.log(`| ${results[i].id} | ${results[i].title} | ${results[i].salary} | ${results[i].department_id} `)
         }
@@ -124,6 +130,9 @@ function allRoles() {
 })
 }
 
+//Selects all employees in chosen department
+//Displays those employees
+//Brings up start questions
 function employeesDepartment() {
     inquirer.prompt ({
         name: "department",
@@ -151,19 +160,9 @@ function employeesDepartment() {
   
 }
 
-
-function getRoles() {
-    var query = "SELECT department_role.title "
-    query += "FROM department_role"
-    connection.query(query, function(err, res) {
-        if (err) throw err;
-        for (i = 0; i < res.length; i ++) {
-            roles.push(res[i].title);
-        }
-    return roles
-    }) 
-}
-
+//Selects all employees in chosen role
+//Displays those employees
+//Brings up start questions
 function employeesRoles() {
     inquirer.prompt ([
         {
@@ -191,6 +190,8 @@ function employeesRoles() {
     });
 }
 
+//Adds a new employee to the employees table 
+//Brings up start questions
 function addEmployee() {
     inquirer.prompt ([
     {
@@ -213,6 +214,7 @@ function addEmployee() {
 
 ]).then(function (responses) {
     var roleNumber;
+    //This translates the role chosen into its corresponding number and stores it in roleNumber
     connection.query("SELECT department_role.id, department_role.title FROM department_role", function(err, res) {
         if (err) throw err;
         for (var i = 0; i < res.length; i++ ) {
@@ -241,10 +243,10 @@ function addEmployee() {
 
     
 });
-    
-  
 }
 
+//This adds a new department into both the department table and the departments array
+//Brings up start questions
 function addDepartment() {
     inquirer.prompt ([
         {
@@ -261,13 +263,15 @@ function addDepartment() {
         function(err) {
             if (err) throw err;
             console.log("Added department successfully")
+            departments.push(response.department)
             runSearch();
 
         })
     });
 }
 
-
+//Adds a new role into both the department_role table and the roles array
+//Brings up start questions
 function addRole() {
     inquirer.prompt ([
         {
@@ -288,6 +292,7 @@ function addRole() {
         }
     ]).then(function(response) {
         var departmentNumber;
+        //This translates the department chosen into its corresponding number and stores it in departmentNumber
         connection.query("SELECT department.id, department.name FROM department", function(err, res) {
             for (var i = 0; i < res.length; i++ ) {
                 if (res[i].name === response.department) {
@@ -312,19 +317,60 @@ function addRole() {
     });
 }
 
+//This updates the chosen employees' role
+//Brings up start questions
 function updateRole() {
-    connection.query("SELECT * FROM employees", function(err, response) {
-        console.log(response);
-    })
-    console.log("Update Role");
-    runSearch();
+        inquirer.prompt ([
+            {
+                name: "idNumber",
+                type: "input",
+                message: "What is the id number of the employee you want to update?"
+            }
+        ]).then(function(response) {
+            //We use variable getID to update the employee's role
+            var getID = parseInt(response.idNumber)
+            var query = "SELECT * FROM employees "
+            connection.query(query, function(err, res) {
+                //This translates the id chosen into its corresponding employees name for a confirmation
+                for (i = 0; i<res.length; i ++) {
+                    if (getID === res[i].id){
+                        console.log("Updating " + res[i].first_name + " " + res[i].last_name + "'s Role");
+                    }
+                }
+                inquirer.prompt ([
+                    {
+                        name: "newRole",
+                        type: "rawlist",
+                        choices: roles,
+                        message: "What do you want your new role to be?"
+
+                    }
+                ]).then(function(response) {
+                    var roleID;
+                    connection.query("SELECT * FROM department_role", function(err, results) {
+                        //This translates the role chosen into its corresponding number and stores it in roleID
+                        for (i = 0; i< results.length; i++) {
+                            if (response.newRole === results[i].title) {
+                                roleID = results[i].id
+                            }
+                        }
+                        connection.query("UPDATE employees SET role_id = ? WHERE id = ?", [roleID, getID], function(err, result) {
+                            console.log("Updated role");
+                            runSearch(); 
+                        });
+                        
+                    })
+                   
+                })
+              
+            });
+        
+        })
+
+   
 }
 
-function updateManager() {
-    console.log("Update Manager");
-    runSearch();
-}
-
+//This function pushes all previously defined roles into the empty roles array 
 function getRoles() {
     var query = "SELECT department_role.title "
     query += "FROM department_role"
@@ -337,6 +383,7 @@ function getRoles() {
     }) 
 }
 
+//This function pushes all previously defined departments into the empty departments array 
 function getDepartments() {
     var query = "SELECT department.name "
     query += "FROM department"
@@ -349,6 +396,6 @@ function getDepartments() {
     }) 
 }
 
-
+//runs the functions to populate departments and roles arrays
 getRoles();
 getDepartments();
